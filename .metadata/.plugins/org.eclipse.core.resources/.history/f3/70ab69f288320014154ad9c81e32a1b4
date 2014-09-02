@@ -1,6 +1,6 @@
 package tddc17;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Point {
 
@@ -62,9 +62,9 @@ public class Point {
 		return result;
 	}
 	
-	public static LinkedList<Point> getAdjacentPoints(Point point){
+	public static ArrayList<Point> getAdjecentPoints(Point point){
 		
-		LinkedList<Point> result = new LinkedList<Point>();
+		ArrayList<Point> result = new ArrayList<Point>();
 		
 		result.add(Point.add(point, new Point(1, 0)));
 		result.add(Point.add(point, new Point(0, -1)));

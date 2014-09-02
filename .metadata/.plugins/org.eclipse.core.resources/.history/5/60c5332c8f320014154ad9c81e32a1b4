@@ -1,6 +1,5 @@
 package tddc17;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,32 +28,18 @@ public class TileMap {
 	
 	public Tile getPathTo(Point originPosition, Point destinationPosition){
 		
-		Iterator<Tile> iter;
-		
 		Tile origin = getTile(originPosition);
 		Tile destination = getTile(destinationPosition);
 		LinkedList<Tile> openList = new LinkedList<Tile>();
 		LinkedList<Tile> closedList = new LinkedList<Tile>();
 		
-		LinkedList<Tile> adjacentTiles = getTiles(Point.getAdjacentPoints(originPosition));
-		iter = adjacentTiles.iterator();
+		openList = getTiles(Point.getAdjacentPoints(originPosition));
 		
-		while(iter.hasNext()){
-			Tile tile = iter.next();
-			
-			if(tile == destination){				// Base. If current tile is adjacent to destination;
-				destination.setParent(tile);		// Set destination parent to current tile and return destination.
-				return destination;
-			}
-			
-			if(tile.getState() == Tile.StateType.X)	// Remove if tile is a wall
-				iter.remove();
-		}				
+		if(openList.contains(destination)){	//Base. If current tile is adjacent 
 		
-		openList.addAll(adjacentTiles);				//Adds adjacent tiles to openList
-		
-		for(Tile tile : openList)					// Calculate cost to all tiles in openlist
-			tile.calcCost(origin, destination, Tile.TO_DEST);
+			destination.setParent(origin);
+			return destination;
+		}
 			
 		
 		return new Tile(Point.Zero());

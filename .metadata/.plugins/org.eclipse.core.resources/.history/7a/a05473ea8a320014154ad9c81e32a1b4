@@ -62,7 +62,7 @@ public class Point {
 		return result;
 	}
 	
-	public static LinkedList<Point> getAdjacentPoints(Point point){
+	public static LinkedList<Point> getAdjecentPoints(Point point){
 		
 		LinkedList<Point> result = new LinkedList<Point>();
 		
