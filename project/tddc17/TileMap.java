@@ -14,7 +14,7 @@ public class TileMap {
 		init(map);
 	}
 	
-	public void extend(int width, int height){
+	public void extendSizeTo(int width, int height){
 		
 		Point[][] newMap = new Point[height][width];
 		init(newMap);
