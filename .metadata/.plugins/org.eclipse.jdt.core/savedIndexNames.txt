@@ -1,6 +1,5 @@
 INDEX VERSION 1.127+C:\Users\Gustaf\Projects\TDDC17-Lab1\.metadata\.plugins\org.eclipse.jdt.core
 648820999.index
-3581163120.index
 2943934462.index
 3867853513.index
 2010491873.index
