@@ -49,14 +49,14 @@ public class TileMap {
 				return destination;
 			}
 			
-			if(tile.getState() == Tile.StateType.X)	// Remove if tile is a wall or in closedList
+			if(tile.getState() == Tile.StateType.wall)	// Remove if tile is a wall or in closedList
 				iter.remove();
 			
 			tile.calcCost(origin, destination, Tile.TO_DEST);
 			
 			if(closedList.contains(tile)){
 				
-				
+				return origin;
 			}
 
 		}				
@@ -114,7 +114,7 @@ public class TileMap {
 		Collections.sort(tiles, new Comparator<Tile>() {
 			@Override
 			public int compare(Tile a, Tile b){
-				return a.getCost() - b.getCost();
+				return a.totalCost() - b.totalCost();
 			}
 		});
 	}
