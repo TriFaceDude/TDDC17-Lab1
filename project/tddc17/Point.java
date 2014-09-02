@@ -24,6 +24,11 @@ public class Point {
 		this.y -= y;
 	}
 	
+	public Point getOrthoCC(){
+		
+		return new Point(this.getY(), this.getX());
+	}
+	
 	public void setX(int x){
 		this.x = x;
 	}
@@ -46,8 +51,18 @@ public class Point {
 		return "( " + Integer.toString(this.x) + ", " + Integer.toString(this.y) + " )";
 	}
 	
+	public static Point add(Point a, Point b){
+		
+		return new Point(a.getX() + b.getX(), a.getY() + b.getY());
+	}
+	
 	public static Point sub(Point a, Point b){
 		
 		return new Point(a.getX() - b.getX(), a.getY() - b.getY());
+	}
+	
+	public static Point Zero(){
+		
+		return new Point(0, 0);
 	}
 }

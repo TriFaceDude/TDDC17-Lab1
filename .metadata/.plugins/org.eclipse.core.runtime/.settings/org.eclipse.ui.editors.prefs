@@ -1,3 +1,5 @@
-#Tue Aug 28 16:32:00 CEST 2012
+AbstractTextEditor.Color.Background=243,243,243
+AbstractTextEditor.Color.Background.SystemDefault=false
+AbstractTextEditor.Color.SelectionBackground=243,243,243
 eclipse.preferences.version=1
 overviewRuler_migration=migrated_3.1

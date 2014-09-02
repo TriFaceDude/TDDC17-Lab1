@@ -1,6 +1,8 @@
 package tddc17;
 
 
+import java.util.Hashtable;
+
 import aima.core.environment.liuvacuum.*;
 import aima.core.agent.Action;
 import aima.core.agent.AgentProgram;
@@ -51,7 +53,7 @@ class MyAgentState
 				if (world[j][i]==WALL)
 					System.out.print(" # ");
 				if (world[j][i]==CLEAR)
-					System.out.print(" . ");
+					System.out.print(" -- ");
 				if (world[j][i]==DIRT)
 					System.out.print(" D ");
 			}
@@ -62,23 +64,75 @@ class MyAgentState
 
 class MyAgentProgram implements AgentProgram {
 
-	private static final Point LEFT = new Point(-1, 0);
-	private static final Point RIGHT = new Point(1, 0);
-	private static final Point UP = new Point(0, -1);
-	private static final Point DOWN = new Point(0, 1);
+	private static final Hashtable<Integer, Point> DIR_MAP = new Hashtable<Integer, Point>(){{
+		put(RIGHT, new Point(1, 0));
+		put(UP, new Point(0, -1));
+		put(LEFT, new Point(-1, 0));
+		put(DOWN, new Point(0, 1));
+	}};
 	
-	private static int a = 0;
-	private static int b = 1;
-	private static int c = 2;
-	private static int d = 3;
+	private static final int RIGHT = 0;
+	private static final int UP = 1;
+	private static final int LEFT = 2;
+	private static final int DOWN = 3;
 	
 	// Here you can define your variables!
-	public int iterationCounter = 10;
+	public int iterationCounter = 20;
 	public MyAgentState state = new MyAgentState();
 	
-	Point position = new Point(0,0);
-	Point direction = RIGHT;
+	private Point position = Point.Zero();
+	private int currentDirection = RIGHT;
+	private int lastTurnAction = state.ACTION_NONE;
+	
+	private Point maxFound = Point.Zero();
+	private Point minFound = Point.Zero();
 
+	private void move(Point moveValue){
+		
+		this.position.add(moveValue);
+		
+		state.agent_x_position += moveValue.getX();
+		state.agent_y_position += moveValue.getY();
+	}
+	
+	private Action turnTowards(Point direction){
+		
+		Point orthoCC = new Point(-this.position.getY(), -this.position.getX());
+		
+		if(direction == orthoCC){
+			
+			this.currentDirection = (this.currentDirection + 1) % 4;
+			this.lastTurnAction = state.ACTION_TURN_LEFT;
+			state.agent_last_action=state.ACTION_TURN_LEFT;
+			return LIUVacuumEnvironment.ACTION_TURN_LEFT;
+		}
+		else{
+			
+			this.currentDirection = (this.currentDirection + 3) % 4;
+			this.lastTurnAction = state.ACTION_TURN_RIGHT;
+			state.agent_last_action=state.ACTION_TURN_RIGHT;
+			return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+		}
+	}
+	
+	private void updateMinMax(){
+		
+		switch(this.currentDirection){
+			case RIGHT:
+				maxFound.setX(Math.max(maxFound.getX(), position.getX()));
+				break;
+			case UP:
+				minFound.setY(Math.min(minFound.getY(), position.getY()));
+				break;
+			case LEFT:
+				minFound.setX(Math.min(minFound.getX(), position.getX()));
+				break;
+			case DOWN:
+				maxFound.setY(Math.max(maxFound.getY(), position.getY()));
+				break;			
+		}
+	}
+	
 	
 	@Override
 	public Action execute(Percept percept) {
@@ -97,14 +151,20 @@ class MyAgentProgram implements AgentProgram {
 	    Boolean home = (Boolean)p.getAttribute("home");
 	    System.out.println("percept: " + p);
 	    
+	    System.out.println("Pos: " + position.toString());
+	    System.out.println("Dir: " + Integer.toString(currentDirection) + " " + DIR_MAP.get(currentDirection));
+	    System.out.println("Min: " + minFound.toString());
+	    System.out.println("Max: " + maxFound.toString());
+	    
 	    // State update based on the percept value and the last action
 	    if (state.agent_last_action==state.ACTION_MOVE_FORWARD)
 	    {
 	    	if (!bump)
 	    	{
-	    		state.agent_x_position++;
+	    		move(DIR_MAP.get(currentDirection));
 	    	} else
 	    	{
+	    		updateMinMax();
 	    		state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
 	    	}
 	    }
@@ -127,8 +187,7 @@ class MyAgentProgram implements AgentProgram {
 	    {
 	    	if (bump)
 	    	{
-	    		state.agent_last_action=state.ACTION_NONE;
-		    	return NoOpAction.NO_OP;
+	    		return turnTowards(Point.add(this.position, DIR_MAP.get(DOWN)));
 	    	}
 	    	else
 	    	{
