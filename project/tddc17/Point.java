@@ -62,16 +62,35 @@ public class Point {
 		return result;
 	}
 	
-	public static LinkedList<Point> getAdjacentPoints(Point point){
+	public static LinkedList<Point> getAdjacentPoints(Point point, Point minBound, Point maxBound){
 		
 		LinkedList<Point> result = new LinkedList<Point>();
 		
-		result.add(Point.add(point, new Point(1, 0)));
-		result.add(Point.add(point, new Point(0, -1)));
-		result.add(Point.add(point, new Point(-1, 0)));
-		result.add(Point.add(point, new Point(0, 1)));
+		Point right = add(point, new Point(1, 0));
+		Point up = add(point, new Point(0, -1));
+		Point left = add(point, new Point(-1, 0));
+		Point down = add(point, new Point(0, 1));
+		
+		if(inBounds(right, minBound, maxBound))
+			result.add(Point.add(point, right));
+		if(inBounds(up, minBound, maxBound))
+			result.add(Point.add(point, up));
+		if(inBounds(left, minBound, maxBound))
+			result.add(Point.add(point, left));
+		if(inBounds(down, minBound, maxBound))
+			result.add(Point.add(point, down));
 		
 		return result;
+	}
+	
+	public static boolean inBounds(Point point, Point minBound, Point maxBound){
+		
+		if(point.getX() < minBound.getX() || point.getY() < minBound.getY())
+			return false;
+		if(point.getX() > maxBound.getX() || point.getY() > maxBound.getY())
+			return false;
+		
+		return true;
 	}
 	
 	public static Point add(Point a, Point b){

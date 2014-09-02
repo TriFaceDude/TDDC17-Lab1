@@ -8,6 +8,7 @@ import java.util.List;
 
 public class TileMap {
 
+	Point size;
 	Tile[][] map;
 	
 	public TileMap(Point size){
@@ -16,6 +17,7 @@ public class TileMap {
 	
 	public TileMap(int width, int height){
 		
+		size = new Point(width, height);
 		map = new Tile[height][width];
 		init(map);
 	}
@@ -26,6 +28,7 @@ public class TileMap {
 		init(newMap);
 		transferTiles(this.map, newMap);
 		
+		this.size = new Point(width, height);
 		this.map = newMap;
 	}
 	
@@ -37,8 +40,9 @@ public class TileMap {
 		Tile destination = getTile(destinationPosition);
 		LinkedList<Tile> openList = new LinkedList<Tile>();
 		LinkedList<Tile> closedList = new LinkedList<Tile>();
+		closedList.add(origin);
 		
-		LinkedList<Tile> adjacentTiles = getTiles(Point.getAdjacentPoints(originPosition));
+		LinkedList<Tile> adjacentTiles = getTiles(Point.getAdjacentPoints(originPosition, Point.Zero(), this.size));
 		iter = adjacentTiles.iterator();
 		
 		while(iter.hasNext()){
@@ -49,33 +53,29 @@ public class TileMap {
 				return destination;
 			}
 			
-			if(tile.getState() == Tile.StateType.wall)	// Remove if tile is a wall or in closedList
-				iter.remove();
-			
-			tile.calcCost(origin, destination, Tile.TO_DEST);
-			
-			if(closedList.contains(tile)){
+			if(tile.getState() == Tile.StateType.wall){	// Remove if tile is a wall or in closedList
 				
-				return origin;
+				iter.remove();
 			}
-
+			else if(closedList.contains(tile) && (tile.getCostFrom(origin) > tile.getTotalCost())){				
+	
+				iter.remove();	
+			}
+			else{
+				
+				tile.calcCost(origin, destination, Tile.TO_DEST); // Calculates cost for tile and sets origin to parent
+			}		
 		}				
 		
-		openList.addAll(adjacentTiles);				//Adds adjacent tiles to openList
+		openList.addAll(adjacentTiles);				// Adds adjacent tiles to openList
 		
 		if(openList.isEmpty())						// If openList is empty no path could be found, return current tile
 			return origin;
-		
-		for(Tile tile : openList)					// Calculate cost to all tiles in openList
-			tile.calcCost(origin, destination, Tile.TO_DEST);
 					
-		sortByCost(openList);						// Sort openList in ascending order
-		
-		Tile cheapestTile = openList.getFirst();	// Select the first (cheapest) tile
+		sortByCost(openList);						// Sort openList in ascending cost order
 		openList.removeFirst();						// Remove first tile from openList
-		closedList.add(cheapestTile);				// and add it to the closedList
 		
-		return getPathTo(cheapestTile.getPosition(), destination.getPosition());
+		return getPathTo(openList.getFirst().getPosition(), destination.getPosition());
 	}
 	
 	public Tile getPathExplore(Point origin, Point home){
@@ -114,7 +114,7 @@ public class TileMap {
 		Collections.sort(tiles, new Comparator<Tile>() {
 			@Override
 			public int compare(Tile a, Tile b){
-				return a.totalCost() - b.totalCost();
+				return a.getTotalCost() - b.getTotalCost();
 			}
 		});
 	}
