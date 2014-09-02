@@ -80,6 +80,7 @@ class MyAgentProgram implements AgentProgram {
 	public int iterationCounter = 20;
 	public MyAgentState state = new MyAgentState();
 	
+	private TileMap map = new TileMap(2, 2);
 	private Point position = Point.Zero();
 	private int currentDirection = RIGHT;
 	private int lastTurnAction = state.ACTION_NONE;
@@ -151,6 +152,8 @@ class MyAgentProgram implements AgentProgram {
 	    Boolean home = (Boolean)p.getAttribute("home");
 	    System.out.println("percept: " + p);
 	    
+	    map.print();
+	    map.extend(2, 4);
 	    System.out.println("Pos: " + position.toString());
 	    System.out.println("Dir: " + Integer.toString(currentDirection) + " " + DIR_MAP.get(currentDirection));
 	    System.out.println("Min: " + minFound.toString());
@@ -173,7 +176,7 @@ class MyAgentProgram implements AgentProgram {
 	    else
 	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
 	    
-	    state.printWorldDebug();
+	    //state.printWorldDebug();
 	    
 	    
 	    // Next action selection based on the percept value
