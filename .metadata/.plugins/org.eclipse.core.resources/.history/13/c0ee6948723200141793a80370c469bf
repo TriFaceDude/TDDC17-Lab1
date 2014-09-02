@@ -45,16 +45,6 @@ public class Point {
 		return this.y;
 	}
 	
-	public int manhattanDistance(Point position){
-		
-		int result = 0;
-		
-		result += Math.abs(this.getX() - position.getX());
-		result += Math.abs(this.getY() - position.getY());
-		
-		return result;		
-	}
-	
 	@Override
 	public String toString(){
 		
