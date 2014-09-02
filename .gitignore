@@ -9,8 +9,6 @@
 # Eclipse
 .recommenders/
 .metadata/
-.classpath
-.project
 .settings/
 
 # Intellij
