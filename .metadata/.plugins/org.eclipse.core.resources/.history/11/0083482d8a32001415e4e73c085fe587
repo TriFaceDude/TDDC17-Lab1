@@ -6,41 +6,27 @@ public class Tile {
 	public static final int FROM_DEST = -1;
 	
 	public enum StateType{
-		visited, unvisited, wall
+		V, U, X, G, H
 	}
 	
 	private StateType state;
 	private Point position;
-	private int repulsionCost;
-	private int movmentCost;
-	
+	private int cost;
 	private Tile parent;
-	
 	
 	public Tile(Point position) {
 		this.position = position;
-		this.state = StateType.unvisited;
-		this.repulsionCost = 0;
-		this.movmentCost = 0;
+		this.state = StateType.U;
+		this.cost = 0;
 		this.parent = null;
 		
 	}
 	
 	public int calcCost(Tile parent, Tile destination, int pathMode){
 		
-		 
 		
-		if (destination.state == StateType.unvisited) {
-			movmentCost += 1;
 		
-		} else if (destination.state == StateType.visited) {
-			movmentCost += 2;
-		}
-		
-		 
-		
-		//avstånd = Movment
-		return movmentCost;
+		return cost;
 		
 	}
 	
@@ -64,24 +50,12 @@ public class Tile {
 		this.position = position;
 	}
 
-	public int repulsionCost() {
-		return repulsionCost;
+	public int getCost() {
+		return cost;
 	}
 
-	public void setrepulsionCost(int cost) {
-		this.repulsionCost = cost;
-	}
-	
-	public int movmentCost() {
-		return movmentCost;
-	}
-
-	public void setmovmentCost(int cost) {
-		this.repulsionCost = cost;
-	}
-	
-	public int totalCost () {
-		return repulsionCost + movmentCost;
+	public void setCost(int cost) {
+		this.cost = cost;
 	}
 
 	public Tile getParent() {
