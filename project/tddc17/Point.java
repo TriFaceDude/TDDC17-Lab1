@@ -45,22 +45,20 @@ public class Point {
 		return this.y;
 	}
 	
-	public int manhattanDistance(Point position){
-		
-		int result = 0;
-		
-		result += Math.abs(this.getX() - position.getX());
-		result += Math.abs(this.getY() - position.getY());
-		
-		return result;		
-	}
-	
 	@Override
 	public String toString(){
 		
 		return "( " + Integer.toString(this.x) + ", " + Integer.toString(this.y) + " )";
 	}
 	
+	public static int manhattanDistance(Point a, Point b){
+		int result = 0;
+		
+		result += Math.abs(a.getX() - b.getX());
+		result += Math.abs(a.getY() - b.getY());
+		
+		return result;
+	}
 	public static Point add(Point a, Point b){
 		
 		return new Point(a.getX() + b.getX(), a.getY() + b.getY());
