@@ -1,0 +1,24 @@
+# Java class files
+*.class
+
+# Temp files
+*~
+*.swp
+*.swo
+
+# Eclipse
+.recommenders/
+.metadata/
+.settings/
+
+# Intellij
+workspace.xml
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
