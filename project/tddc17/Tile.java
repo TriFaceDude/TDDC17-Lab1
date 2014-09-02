@@ -4,6 +4,9 @@ public class Tile {
 
 	public static final int TO_DEST = 1;
 	public static final int FROM_DEST = -1;
+	public static final int UNVISITED_COST = 1;
+	public static final int VISITED_COST = 2;
+	public static final int TURN_COST = 1;
 	
 	public enum StateType{
 		visited, unvisited, wall
@@ -26,25 +29,36 @@ public class Tile {
 		
 	}
 	
-	public int calcCost(Tile parent, Tile destination, int pathMode){
-		
-		 
+	public void calcCost(Tile parent, Tile destination, int pathMode, int turnCount){
 		
 		if (destination.state == StateType.unvisited) {
-			movmentCost += 1;
+			repulsionCost += UNVISITED_COST;
 		
 		} else if (destination.state == StateType.visited) {
-			movmentCost += 2;
+			repulsionCost += VISITED_COST;
 		}
 		
+		setMovmentCost(Point.manhattanDistance(this.position, destination.position)*pathMode);
+		
+		setRepulsionCost(repulsionCost + (TURN_COST*turnCount) + parent.repulsionCost);
 		 
-		return movmentCost;
+		this.parent = parent;
 		
 	}
 	
-	public int getCostFrom (Tile tile){
+	public int getCostFrom(Tile parent, Tile tile,int pathMode, int turnCount){
 		
-		return 0;
+		int tempRepulsionCost = this.repulsionCost;
+		
+		if (tile.state == StateType.unvisited) {
+			tempRepulsionCost = repulsionCost + UNVISITED_COST;
+		
+		} else if (tile.state == StateType.visited) {
+			tempRepulsionCost = repulsionCost + VISITED_COST;
+		}
+		
+		return((Point.manhattanDistance(this.position, tile.position)*pathMode) + (tempRepulsionCost + (TURN_COST*turnCount) + parent.repulsionCost));
+	
 	}
 	
 	public static int distance (Tile a, Tile b){
