@@ -38,10 +38,13 @@ public class Tile {
 		}
 		
 		 
-		
-		//avstånd = Movment
 		return movmentCost;
 		
+	}
+	
+	public int getCostFrom (Tile tile){
+		
+		return 0;
 	}
 	
 	public static int distance (Tile a, Tile b){
@@ -64,23 +67,23 @@ public class Tile {
 		this.position = position;
 	}
 
-	public int repulsionCost() {
+	public int getRepulsionCost() {
 		return repulsionCost;
 	}
 
-	public void setrepulsionCost(int cost) {
+	public void setRepulsionCost(int cost) {
 		this.repulsionCost = cost;
 	}
 	
-	public int movmentCost() {
+	public int getMovmentCost() {
 		return movmentCost;
 	}
 
-	public void setmovmentCost(int cost) {
+	public void setMovmentCost(int cost) {
 		this.repulsionCost = cost;
 	}
 	
-	public int totalCost () {
+	public int getTotalCost () {
 		return repulsionCost + movmentCost;
 	}
 
