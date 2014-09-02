@@ -1,7 +1,5 @@
 package tddc17;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,37 +43,21 @@ public class TileMap {
 			Tile tile = iter.next();
 			
 			if(tile == destination){				// Base. If current tile is adjacent to destination;
-				destination.setParent(tile);		// Set destination parent to current tile and return destination tile.
+				destination.setParent(tile);		// Set destination parent to current tile and return destination.
 				return destination;
 			}
 			
-			if(tile.getState() == Tile.StateType.X)	// Remove if tile is a wall or in closedList
+			if(tile.getState() == Tile.StateType.X)	// Remove if tile is a wall
 				iter.remove();
-			
-			tile.calcCost(origin, destination, Tile.TO_DEST);
-			
-			if(closedList.contains(tile)){
-				
-				
-			}
-
 		}				
 		
 		openList.addAll(adjacentTiles);				//Adds adjacent tiles to openList
 		
-		if(openList.isEmpty())						// If openList is empty no path could be found, return current tile
-			return origin;
-		
-		for(Tile tile : openList)					// Calculate cost to all tiles in openList
+		for(Tile tile : openList)					// Calculate cost to all tiles in openlist
 			tile.calcCost(origin, destination, Tile.TO_DEST);
-					
-		sortByCost(openList);						// Sort openList in ascending order
+			
 		
-		Tile cheapestTile = openList.getFirst();	// Select the first (cheapest) tile
-		openList.removeFirst();						// Remove first tile from openList
-		closedList.add(cheapestTile);				// and add it to the closedList
-		
-		return getPathTo(cheapestTile.getPosition(), destination.getPosition());
+		return new Tile(Point.Zero());
 	}
 	
 	public Tile getPathExplore(Point origin, Point home){
@@ -106,17 +88,6 @@ public class TileMap {
 			result.add(getTile(position));
 			
 		return result;
-	}
-	
-	
-	private static void sortByCost(LinkedList<Tile> tiles){
-		
-		Collections.sort(tiles, new Comparator<Tile>() {
-			@Override
-			public int compare(Tile a, Tile b){
-				return a.getCost() - b.getCost();
-			}
-		});
 	}
 	
 	private static void init(Tile[][] map){
