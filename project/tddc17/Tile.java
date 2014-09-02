@@ -8,11 +8,11 @@ public class Tile {
 	public static final int VISITED_COST = 2;
 	public static final int TURN_COST = 1;
 	
-	public enum StateType{
-		visited, unvisited, wall
+	public enum Type{
+		Clear, Unkown, Wall, Dirt
 	}
 	
-	private StateType state;
+	private Type type;
 	private Point position;
 	private int repulsionCost;
 	private int movmentCost;
@@ -22,7 +22,7 @@ public class Tile {
 	
 	public Tile(Point position) {
 		this.position = position;
-		this.state = StateType.unvisited;
+		this.type = Type.Unkown;
 		this.repulsionCost = 0;
 		this.movmentCost = 0;
 		this.parent = null;
@@ -31,11 +31,11 @@ public class Tile {
 	
 	public void calcCost(Tile parent, Tile destination, int pathMode, int turnCount){
 		
-		if (this.state == StateType.unvisited) {
-			this.repulsionCost += UNVISITED_COST;
-		
-		} else if (this.state == StateType.visited) {
-			this.repulsionCost += VISITED_COST;
+		if (this.type == Type.Unkown) {
+			this.repulsionCost = UNVISITED_COST;
+			
+		} else if (this.type == Type.Clear) {
+			this.repulsionCost = VISITED_COST;
 		}
 		
 		this.movmentCost += Point.manhattanDistance(this.position, destination.position)*pathMode;
@@ -46,15 +46,16 @@ public class Tile {
 		
 	}
 	
-	public int getCostFrom(Tile parent, Tile destination,int pathMode, int turnCount){
+	public int getCostThrough(Tile parent, Tile destination,int pathMode, int turnCount){
+		
 		
 		int tempRepulsionCost = this.repulsionCost;
 		
-		if (this.state == StateType.unvisited) {
-			tempRepulsionCost = repulsionCost + UNVISITED_COST;
+		if (this.type == Type.Unkown) {
+			tempRepulsionCost = UNVISITED_COST;
 		
-		} else if (this.state == StateType.visited) {
-			tempRepulsionCost = repulsionCost + VISITED_COST;
+		} else if (this.type == Type.Clear) {
+			tempRepulsionCost = VISITED_COST;
 		}
 		
 		return((Point.manhattanDistance(this.position, destination.position)*pathMode) + (tempRepulsionCost + (TURN_COST*turnCount) + parent.repulsionCost));
@@ -65,12 +66,12 @@ public class Tile {
 		return Point.manhattanDistance(a.getPosition(), b.getPosition());
 	}
 
-	public StateType getState() {
-		return state;
+	public Type getType() {
+		return type;
 	}
 
-	public void setState(StateType state) {
-		this.state = state;
+	public void setType(Type type) {
+		this.type = type;
 	}
 
 	public Point getPosition() {
@@ -94,7 +95,7 @@ public class Tile {
 	}
 
 	public void setMovmentCost(int cost) {
-		this.repulsionCost = cost;
+		this.movmentCost = cost;
 	}
 	
 	public int getTotalCost () {

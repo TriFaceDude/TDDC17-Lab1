@@ -2,6 +2,8 @@ package tddc17;
 
 
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Stack;
 
 import aima.core.environment.liuvacuum.*;
 import aima.core.agent.Action;
@@ -14,9 +16,9 @@ class MyAgentState
 {
 	public int[][] world = new int[20][20];
 	public int initialized = 0;
-	final int UNKNOWN 	= 0;
-	final int WALL 		= 1;
-	final int CLEAR 	= 2;
+	static int UNKNOWN 	= 0;
+	static int WALL 	= 1;
+	static int CLEAR 	= 2;
 	final int DIRT		= 3;
 	final int ACTION_NONE 		= 0;
 	final int ACTION_MOVE_FORWARD 	= 1;
@@ -71,6 +73,17 @@ class MyAgentProgram implements AgentProgram {
 		put(DOWN, new Point(0, 1));
 	}};
 	
+	private static final Hashtable<Tile.Type, Integer> TILE_TYPE_MAP = new Hashtable<Tile.Type, Integer>(){{
+		put(Tile.Type.Unkown, 0);
+		put(Tile.Type.Wall, 1);
+		put(Tile.Type.Clear, 2);
+		put(Tile.Type.Dirt, 3);
+	}};
+
+	boolean updatePath = true;
+	Stack<Point> pointsOfInterest = new Stack<Point>(); 			//huhehe 
+	Stack<Tile> path = new Stack<Tile>();
+	
 	private static final int RIGHT = 0;
 	private static final int UP = 1;
 	private static final int LEFT = 2;
@@ -80,8 +93,8 @@ class MyAgentProgram implements AgentProgram {
 	public int iterationCounter = 20;
 	public MyAgentState state = new MyAgentState();
 	
-	private TileMap map = new TileMap(2, 2);
-	private Point position = Point.Zero();
+	private TileMap map = new TileMap(20, 20);
+	private Point position = new Point(1, 1);
 	private int currentDirection = RIGHT;
 	private int lastTurnAction = state.ACTION_NONE;
 	
@@ -98,9 +111,9 @@ class MyAgentProgram implements AgentProgram {
 	
 	private Action turnTowards(Point direction){
 		
-		Point orthoCC = new Point(-this.position.getY(), -this.position.getX());
+		Point orthoCC = new Point(-DIR_MAP.get(currentDirection).getY(), -DIR_MAP.get(currentDirection).getX());
 		
-		if(direction == orthoCC){
+		if(direction.equals(orthoCC)){
 			
 			this.currentDirection = (this.currentDirection + 1) % 4;
 			this.lastTurnAction = state.ACTION_TURN_LEFT;
@@ -116,88 +129,98 @@ class MyAgentProgram implements AgentProgram {
 		}
 	}
 	
-	private void updateMinMax(){
+	private Action exploreRoom(){
 		
-		switch(this.currentDirection){
-			case RIGHT:
-				maxFound.setX(Math.max(maxFound.getX(), position.getX()));
-				break;
-			case UP:
-				minFound.setY(Math.min(minFound.getY(), position.getY()));
-				break;
-			case LEFT:
-				minFound.setX(Math.min(minFound.getX(), position.getX()));
-				break;
-			case DOWN:
-				maxFound.setY(Math.max(maxFound.getY(), position.getY()));
-				break;			
+		if(!path.isEmpty() && position.equals(path.lastElement().getPosition())){
+			
+			updatePath = true;
+			
+			if(!pointsOfInterest.isEmpty())
+				pointsOfInterest.pop();
 		}
+		
+		while(!pointsOfInterest.isEmpty() && updatePath){
+				
+			path = map.getPath(position, pointsOfInterest.peek(), Tile.TO_DEST);
+			
+			if(path.lastElement().getPosition().equals(pointsOfInterest.peek()))
+				updatePath = false;
+		}
+		
+		while(updatePath){
+			path = map.getPath(position, new Point(1, 1), Tile.FROM_DEST);
+			
+			if(path.lastElement().getType() == Tile.Type.Unkown)
+				updatePath = false;
+		}
+		
+		if(isFacing(path.peek().getPosition())){
+			
+			state.agent_last_action = state.ACTION_MOVE_FORWARD;
+			return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+		}
+		else{
+			
+			return turnTowards(Point.direction(position, path.peek().getPosition()));
+		}
+	}
+	
+	private boolean isFacing(Point destination){
+		
+		return (dirAsPoint().equals(Point.direction(position, destination)));
+	}
+	
+	private Point dirAsPoint(){
+		
+		return DIR_MAP.get(currentDirection);
 	}
 	
 	
 	@Override
 	public Action execute(Percept percept) {
-		
-		// This example agent program will update the internal agent state while only moving forward.
-		// Note! It works under the assumption that the agent starts facing to the right.
-
-	    iterationCounter--;
-	    
-	    if (iterationCounter==0)
-	    	return NoOpAction.NO_OP;
 
 	    DynamicPercept p = (DynamicPercept) percept;
 	    Boolean bump = (Boolean)p.getAttribute("bump");
 	    Boolean dirt = (Boolean)p.getAttribute("dirt");
-	    Boolean home = (Boolean)p.getAttribute("home");
-	    System.out.println("percept: " + p);
-	    
-	    map.print();
-	    map.extendSizeTo(2, 4);
+	    Boolean home = (Boolean)p.getAttribute("home");  
+
 	    System.out.println("Pos: " + position.toString());
 	    System.out.println("Dir: " + Integer.toString(currentDirection) + " " + DIR_MAP.get(currentDirection));
-	    System.out.println("Min: " + minFound.toString());
-	    System.out.println("Max: " + maxFound.toString());
 	    
-	    // State update based on the percept value and the last action
+		if(dirt)
+			return cleanCurrentTile();
+	    
 	    if (state.agent_last_action==state.ACTION_MOVE_FORWARD)
 	    {
 	    	if (!bump)
 	    	{
 	    		move(DIR_MAP.get(currentDirection));
+	    		
 	    	} else
 	    	{
-	    		updateMinMax();
-	    		state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
+	    		updatePath = true;
+	    		pointsOfInterest.push(Point.add(position, Point.mul(dirAsPoint(), 2)));
+	    		updateWorld(Point.add(this.position, dirAsPoint()), Tile.Type.Wall);
 	    	}
 	    }
-	    if (dirt)
-	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
-	    else
-	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
 	    
-	    //state.printWorldDebug();
+	    updateWorld(position, Tile.Type.Clear);
+	    map.print();
 	    
-	    
-	    // Next action selection based on the percept value
-	    if (dirt)
-	    {
-	    	System.out.println("DIRT -> choosing SUCK action!");
-	    	state.agent_last_action=state.ACTION_SUCK;
-	    	return LIUVacuumEnvironment.ACTION_SUCK;
-	    } 
-	    else
-	    {
-	    	if (bump)
-	    	{
-	    		return turnTowards(Point.add(this.position, DIR_MAP.get(DOWN)));
-	    	}
-	    	else
-	    	{
-	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
-	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
-	    	}
-	    }
+	    return exploreRoom();
+	}
+	
+	private Action cleanCurrentTile(){
+		
+    	updateWorld(position, Tile.Type.Dirt);
+    	state.agent_last_action=state.ACTION_SUCK;
+    	return LIUVacuumEnvironment.ACTION_SUCK;
+	}
+	
+	private void updateWorld(Point position, Tile.Type type){
+		
+		state.updateWorld(position.getX(),position.getY(), TILE_TYPE_MAP.get(type));
+		map.setTileType(position, type);
 	}
 }
 

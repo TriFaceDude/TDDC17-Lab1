@@ -2,12 +2,21 @@ package tddc17;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 public class TileMap {
 
+	private static final Hashtable<Tile.Type, String> TILE_SYMBOL_MAP = new Hashtable<Tile.Type, String>(){{
+		put(Tile.Type.Unkown, "?");
+		put(Tile.Type.Wall, "#");
+		put(Tile.Type.Clear, "--");
+		put(Tile.Type.Dirt, "D");
+	}};
+	
 	Point size;
 	Tile[][] map;
 	
@@ -32,14 +41,51 @@ public class TileMap {
 		this.map = newMap;
 	}
 	
-	public Tile getPathTo(Point originPosition, Point destinationPosition){
+	LinkedList<Tile> openList = new LinkedList<Tile>();
+	LinkedList<Tile> closedList = new LinkedList<Tile>();
+	
+	public void clearPathLists(){
+		openList.clear();
+		closedList.clear();
+		for(int y = 0; y < map.length; y++){
+			for(int x = 0; x < map[y].length; x++){
+				getTile(x, y).setParent(null);
+				getTile(x, y).setMovmentCost(0);
+				getTile(x, y).setRepulsionCost(0);
+			}
+		}
+	}
+
+	public Stack<Tile> getPath(Point originPosition, Point destinationPosition, int mode){
+		
+		Stack<Tile> result = new Stack<Tile>();
+		clearPathLists();
+		
+		if(!Point.inBounds(destinationPosition, Point.Zero(), size)){
+			
+			result.push(getTile(originPosition));
+			return result;		
+		}
+			
+		
+		Tile tile = pathfind(originPosition, destinationPosition, mode);
+		
+		while(tile != null){
+			result.push(tile);
+			tile = tile.getParent();	
+		}
+		
+		result.pop();
+		return result;
+	}
+	
+	private Tile pathfind(Point originPosition, Point destinationPosition, int mode){
 		
 		Iterator<Tile> iter;
 		
 		Tile origin = getTile(originPosition);
 		Tile destination = getTile(destinationPosition);
-		LinkedList<Tile> openList = new LinkedList<Tile>();
-		LinkedList<Tile> closedList = new LinkedList<Tile>();
+
 		closedList.add(origin);
 		
 		LinkedList<Tile> adjacentTiles = getTiles(Point.getAdjacentPoints(originPosition, Point.Zero(), this.size));
@@ -48,22 +94,32 @@ public class TileMap {
 		while(iter.hasNext()){
 			Tile tile = iter.next();
 			
-			if(tile == destination){				// Base. If current tile is adjacent to destination;
-				destination.setParent(tile);		// Set destination parent to current tile and return destination tile.
-				return destination;
+			if(mode == Tile.TO_DEST){					// If we are looking for a specific tile
+				if(tile == destination){				// If current tile is adjacent to destination;
+					destination.setParent(origin);		// Set destination parent to current tile and return destination tile.
+					return destination;
+				}
+			} else{
+				
+				if(tile.getType() == Tile.Type.Unkown){	// We are looking for any unknown tile
+					
+					tile.setParent(origin);				// Set tile parent to current tile and return it
+					return tile;
+				}
 			}
+
 			
-			if(tile.getState() == Tile.StateType.wall){	// Remove if tile is a wall or in closedList
+			if(tile.getType() == Tile.Type.Wall){	// Remove if tile is a wall or in closedList
 				
 				iter.remove();
 			}
-			else if(closedList.contains(tile) && (tile.getCostFrom(origin) > tile.getTotalCost())){				
+			else if(closedList.contains(tile) && (tile.getCostThrough(origin, destination, mode, 0) > tile.getTotalCost())){				
 	
 				iter.remove();	
 			}
 			else{
 				
-				tile.calcCost(origin, destination, Tile.TO_DEST); // Calculates cost for tile and sets origin to parent
+				tile.calcCost(origin, destination, mode, 0); // Calculates cost for tile and sets origin to parent
 			}		
 		}				
 		
@@ -73,9 +129,10 @@ public class TileMap {
 			return origin;
 					
 		sortByCost(openList);						// Sort openList in ascending cost order
+		Tile cheapest = openList.getFirst();
 		openList.removeFirst();						// Remove first tile from openList
 		
-		return getPathTo(openList.getFirst().getPosition(), destination.getPosition());
+		return pathfind(cheapest.getPosition(), destination.getPosition(), mode);
 	}
 	
 	public Tile getPathExplore(Point origin, Point home){
@@ -83,19 +140,27 @@ public class TileMap {
 		return new Tile(Point.Zero());
 	}
 	
+	public void setTileType(Point position, Tile.Type type){
+		
+		getTile(position).setType(type);
+	}
+	
 	public void print(){
 		
 		for(int y = 0; y < map.length; y++){
 			for(int x = 0; x < map[y].length; x++){
-				System.out.print(map[y][x]);	
+				System.out.print(TILE_SYMBOL_MAP.get(map[y][x].getType()));	
 			}
 			System.out.println("");
 		}
 	}
 	
+	public Tile getTile(int x, int y) {
+		return map[x][x];
+	}
+	
 	public Tile getTile(Point position){
-		
-		return map[position.getY()][position.getX()];
+		return getTile(position.getX(), position.getY());
 	}
 	
 	public LinkedList<Tile> getTiles(List<Point> positionList){

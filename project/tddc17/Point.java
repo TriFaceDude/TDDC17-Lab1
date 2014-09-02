@@ -72,13 +72,13 @@ public class Point {
 		Point down = add(point, new Point(0, 1));
 		
 		if(inBounds(right, minBound, maxBound))
-			result.add(Point.add(point, right));
+			result.add(right);
 		if(inBounds(up, minBound, maxBound))
-			result.add(Point.add(point, up));
+			result.add(up);
 		if(inBounds(left, minBound, maxBound))
-			result.add(Point.add(point, left));
+			result.add(left);
 		if(inBounds(down, minBound, maxBound))
-			result.add(Point.add(point, down));
+			result.add(down);
 		
 		return result;
 	}
@@ -103,8 +103,37 @@ public class Point {
 		return new Point(a.getX() - b.getX(), a.getY() - b.getY());
 	}
 	
+	public static Point mul(Point a, int i){
+		
+		return new Point(a.getX()*i, a.getY()*i);
+	}
+	
+	public static Point divideBySelf(Point point){
+		
+		return new Point(point.getX()/Math.max(Math.abs(point.getX()), 1) ,
+							point.getY()/Math.max(Math.abs(point.getY()), 1));
+	}
+	
+	public static Point direction(Point a, Point b){
+		
+		return divideBySelf(sub(b, a));
+	}
+	
 	public static Point Zero(){
 		
 		return new Point(0, 0);
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		if(!(obj instanceof Point))
+			return false;
+		
+		Point point = (Point)obj;
+		
+		return (this.x == point.getX() && this.y == point.getY());
+	}
+	
+	
 }
