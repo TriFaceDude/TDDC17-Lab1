@@ -153,7 +153,7 @@ class MyAgentProgram implements AgentProgram {
 	    System.out.println("percept: " + p);
 	    
 	    map.print();
-	    map.extend(2, 4);
+	    map.extendSizeTo(2, 4);
 	    System.out.println("Pos: " + position.toString());
 	    System.out.println("Dir: " + Integer.toString(currentDirection) + " " + DIR_MAP.get(currentDirection));
 	    System.out.println("Min: " + minFound.toString());
